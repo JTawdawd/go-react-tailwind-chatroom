@@ -4,11 +4,26 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login button clicked');
-    console.log('Username:', username);
-    console.log('Password:', password);
+
+    try {
+      const response = await fetch('http://localhost:8080/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.ok) {
+        console.log('Login request successful');
+      } else {
+        console.log('Login request failed');
+      }
+    } catch (error) {
+      console.error('Error occurred during login:', error);
+    }
   };
 
   return (
