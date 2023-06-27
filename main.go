@@ -7,18 +7,22 @@ import (
 	"github.com/gorilla/handlers"
 )
 
+type server struct{}
+
+func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message": "hello world"}`))
+}
+
 func main() {
-	// Enable CORS
 	corsMiddleware := handlers.CORS(
 		handlers.AllowedOrigins([]string{"http://localhost:3000"}),
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
 		handlers.AllowedHeaders([]string{"Content-Type"}),
 	)
-
-	// Set up routes and handlers
+	s := &server{}
+	http.Handle("/", corsMiddleware(s))
 	http.HandleFunc("/login", HandleLogin)
-
-	// Start the server with CORS middleware
-	log.Println("Server started on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", corsMiddleware(nil)))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
