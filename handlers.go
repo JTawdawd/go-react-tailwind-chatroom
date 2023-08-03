@@ -66,26 +66,26 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Login request received"))
 }
 
-func getUser1() {
-	var (
-		id       int
-		username string
-	)
-	rows, err := DB.Query("select id, username from user_account where id = $1", 1)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
+// func getUser1() {
+// 	var (
+// 		id       int
+// 		username string
+// 	)
+// 	rows, err := DB.Query("select id, username from user_account where id = $1", 1)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	defer rows.Close()
 
-	for rows.Next() {
-		err := rows.Scan(&id, &username)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Println(id, username)
-	}
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
+// 	for rows.Next() {
+// 		err := rows.Scan(&id, &username)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+// 		log.Println(id, username)
+// 	}
+// 	err = rows.Err()
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// }

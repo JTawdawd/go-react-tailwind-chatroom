@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/handlers"
 	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"
@@ -22,8 +21,6 @@ const (
 
 var DB *sql.DB
 
-type server struct{}
-
 func connectDB() {
 	pgsqlDetails := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, os.Getenv("DB_PASSWORD"), dbname)
 	db, err := sql.Open("postgres", pgsqlDetails)
@@ -31,30 +28,28 @@ func connectDB() {
 		panic(err)
 	}
 	DB = db
+	log.Println("Connected to database :)")
 }
 
-func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"message": "hello world"}`))
 }
 
 func main() {
+
+	fs := http.FileServer(http.Dir("frontend/build"))
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading environment variables file")
 	}
 	connectDB()
-	getUser1()
 
-	corsMiddleware := handlers.CORS(
-		handlers.AllowedOrigins([]string{"http://localhost:3000"}),
-		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
-		handlers.AllowedHeaders([]string{"Content-Type"}),
-	)
-	s := &server{}
-	http.Handle("/", corsMiddleware(s))
+	http.Handle("/", fs)
 	http.HandleFunc("/login", HandleLogin)
 	http.HandleFunc("/create", CreateUser)
+	log.Fatal(http.ListenAndServe(":8080", nil))
+
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
