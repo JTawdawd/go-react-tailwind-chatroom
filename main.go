@@ -49,7 +49,7 @@ func main() {
 	http.Handle("/", fs)
 	http.HandleFunc("/login", HandleLogin)
 	http.HandleFunc("/create", CreateUser)
-	log.Fatal(http.ListenAndServe(":8080", nil))
-
+	http.HandleFunc("/chatrooms", Chatrooms)
+	http.HandleFunc("/chatroom", GetChatroom)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

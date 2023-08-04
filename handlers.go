@@ -12,6 +12,28 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type registerRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
+}
+
+type chatroomRequest struct {
+	ID int `json:"id"`
+}
+
+type Chatroom struct {
+	ID    int    `json:"id"`
+	Title string `json:"title"`
+}
+
+type Message struct {
+	ID        int    `json:"id"`
+	Content   string `json:"content"`
+	CreatedAt string `json:"createdat"`
+	CreatedBy string `json:"createdby"`
+}
+
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -47,7 +69,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	var req LoginRequest
+	var req registerRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -66,26 +88,78 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Login request received"))
 }
 
-// func getUser1() {
-// 	var (
-// 		id       int
-// 		username string
-// 	)
-// 	rows, err := DB.Query("select id, username from user_account where id = $1", 1)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer rows.Close()
+func GetChatroom(w http.ResponseWriter, r *http.Request) {
+	var req chatroomRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
 
-// 	for rows.Next() {
-// 		err := rows.Scan(&id, &username)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		log.Println(id, username)
-// 	}
-// 	err = rows.Err()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// }
+	// return an array of message objects with createdBy, createdAt, content
+	rows, err := DB.Query("SELECT id, content, createdby, createdat FROM message WHERE chatroomid = $1", req.ID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var messages []Message
+
+	for rows.Next() {
+		var message Message
+		err := rows.Scan(&message.ID, &message.Content, &message.CreatedBy, &message.CreatedAt)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		messages = append(messages, message)
+	}
+
+	// Convert the chatrooms slice to JSON format.
+	chatRoomsJSON, err := json.Marshal(messages)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(chatRoomsJSON)
+
+	// open websocket?
+}
+
+func Chatrooms(w http.ResponseWriter, r *http.Request) {
+	// Query the database to fetch all chatrooms.
+	rows, err := DB.Query("SELECT id, title FROM chatroom")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var chatrooms []Chatroom
+
+	for rows.Next() {
+		var chatroom Chatroom
+		err := rows.Scan(&chatroom.ID, &chatroom.Title)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		chatrooms = append(chatrooms, chatroom)
+	}
+
+	// Convert the chatrooms slice to JSON format.
+	chatroomsJSON, err := json.Marshal(chatrooms)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(chatroomsJSON)
+}
