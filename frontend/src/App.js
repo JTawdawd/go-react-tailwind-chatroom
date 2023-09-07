@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Route, Navigate, Routes } from 'react-router-dom';
+import { Route, Navigate, useNavigate, Routes } from 'react-router-dom';
 import Login from './Login';
 import Lobby from './Lobby';
 import Chatroom from './Chatroom';
@@ -14,9 +14,12 @@ function LogoutButton({loggedIn, logout}) {
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(localStorage.getItem('token') !== null);
 
+  const navigate = useNavigate();
+
   const logout = () => {
     localStorage.removeItem('token');
     setLoggedIn(false);
+    navigate('/')
   }
 
   return (
