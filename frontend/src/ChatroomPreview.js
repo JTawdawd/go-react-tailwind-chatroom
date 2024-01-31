@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import './App.css'
 
 const ChatroomPreview = ({ id, title }) => {
 
   return (
-    <div>
+    <div className="chatroomPreview">
       <h3>Chatroom ID: {id}</h3>
       <p>Title: {title}</p>
       <Link to={`/chatroom/${id}`}>

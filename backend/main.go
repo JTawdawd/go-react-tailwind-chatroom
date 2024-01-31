@@ -8,13 +8,14 @@ import (
 type myHandler struct{}
 
 func (h *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if strings.Contains(r.URL.Path, ".") {
+	if strings.Contains(r.URL.Path, "static") {
 		http.ServeFile(w, r, "../frontend/build"+r.URL.Path)
 		return
 	}
 
-	if r.URL.Path == "/" {
-		serveReactApp(w, r)
+	if !strings.HasPrefix(r.URL.Path, "/api") {
+		//serveReactApp(w, r)
+		http.ServeFile(w, r, "../frontend/build/index.html")
 		return
 	}
 
@@ -29,7 +30,7 @@ func (h *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveReactApp(w http.ResponseWriter, r *http.Request) {
-	fs := http.FileServer(http.Dir("../frontend/build"))
+	fs := http.FileServer(http.Dir("../frontend/build/index.html"))
 	http.StripPrefix("/", fs).ServeHTTP(w, r)
 }
 

@@ -12,8 +12,8 @@ func init() {
 	handlerDefinitions = make(map[string]handlerDefinition)
 
 	//handlerDefinitions["/"] = fs
-	handlerDefinitions["/login"] = handler.HandleLogin
-	handlerDefinitions["/create"] = handler.CreateUser
-	handlerDefinitions["chatrooms"] = handler.GetChatrooms
-	handlerDefinitions["/chatroom"] = handler.GetChatroom
+	handlerDefinitions["/api/login"] = handler.HandleLogin
+	handlerDefinitions["/api/createUser"] = handler.CreateUser
+	handlerDefinitions["/api/getChatrooms"] = handler.GetChatrooms
+	handlerDefinitions["/api/getChatroom"] = handler.GetChatroom
 }

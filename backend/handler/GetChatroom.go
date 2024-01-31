@@ -5,10 +5,10 @@ import (
 )
 
 type Message struct {
-	ID        int    `json:"id"`
+	Username  string `json:"username"`
+	UserId    string `json:"id"`
 	Content   string `json:"content"`
 	CreatedAt string `json:"createdat"`
-	CreatedBy string `json:"createdby"`
 }
 
 type chatroomRequest struct {
@@ -33,14 +33,21 @@ func GetChatroom(data []byte) ([]byte, error) {
 
 	for rows.Next() {
 		var message Message
-		err := rows.Scan(&message.ID, &message.Content, &message.CreatedBy, &message.CreatedAt)
+		err := rows.Scan(&message.Username, &message.UserId, &message.Content, &message.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
 		messages = append(messages, message)
 	}
 
-	return json.Marshal(messages)
+	response, err := json.Marshal(map[string]interface{}{
+		"status":   "Success",
+		"messages": messages,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
 
 	// open websocket?
 }

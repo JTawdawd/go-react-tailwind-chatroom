@@ -8,6 +8,11 @@ import (
 )
 
 func handlePost(w http.ResponseWriter, r *http.Request) {
+	if handlerDefinitions[r.URL.Path] == nil {
+		http.Error(w, "handler not defined", http.StatusBadRequest)
+		return
+	}
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -20,7 +25,7 @@ func handlePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response, _ = json.Marshal(map[string]interface{}{
 			"status": "Error",
-			"Error":  err,
+			"Error":  "handler failed: " + err.Error(),
 		})
 	}
 
@@ -30,14 +35,15 @@ func handlePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGet(w http.ResponseWriter, r *http.Request) {
-	var response []byte
-
+	if handlerDefinitions[r.URL.Path] == nil {
+		http.Error(w, "handler not defined", http.StatusBadRequest)
+		return
+	}
 	response, err := handlerDefinitions[r.URL.Path]([]byte{})
-
 	if err != nil {
 		response, _ = json.Marshal(map[string]interface{}{
 			"status": "Error",
-			"Error":  err,
+			"Error":  "handler failed: " + err.Error(),
 		})
 	}
 

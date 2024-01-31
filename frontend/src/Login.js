@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Route, useNavigate, Routes } from 'react-router-dom';
+import './login.css'
 
 const Login = ({ setLoggedIn }) => {
+  // vars
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -9,33 +11,67 @@ const Login = ({ setLoggedIn }) => {
 
   const [login, setLogin] = useState(true);
 
+  const [errors, setErrors] = useState([]);
+
+  // Methods
   const navigate = useNavigate();
+
+  const createUser = async (e) => {
+    e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      setErrors(['Passwords do not match'])
+      return;
+    }
+
+    const response = await fetch('/api/createUser', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username: username, password: password})
+    });
+    const data = response.json();
+    if (data.error !== undefined) {
+      return;
+    }
+    setUsername(data.username);
+    let token = `${data.id}${data.username}`
+    localStorage.setItem('token', token);
+    localStorage.setItem('userId', data.id);
+    setLoggedIn(true);
+    console.log(`token set to ${token}`)
+    navigate('/')
+
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-      const response = await fetch('http://localhost:8080/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password })
-      });
-      let data = await response.json()
-      if (data.error === undefined) {
-        setUsername(data.username);
-        let token = `${data.id}${data.username}`
-        localStorage.setItem('token', token);
-        setLoggedIn(true);
-        console.log(`token set to ${token}`)
-        navigate('/')
-      }
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password })
+    });
+    let data = await response.json()
+    if (data.error === undefined) {
+      setUsername(data.username);
+      let token = `${data.id}${data.username}`
+      localStorage.setItem('token', token);
+      localStorage.setItem('userId', data.id);
+      setLoggedIn(true);
+      console.log(`token set to ${token}`)
+      navigate('/')
+    }
   };
 
   const toggleLogin = (value) => {
       setLogin(value);
   }
 
+  // Template
   return (
     <div className="entry_wrapper">
 		<header>
@@ -68,7 +104,7 @@ const Login = ({ setLoggedIn }) => {
 				<label> Confirm Password </label>
 				<input type="text" name="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}/>
 				
-				<button onClick={handleSubmit}>Register</button>
+				<button onClick={createUser}>Register</button>
 			</form>
 		</div>
 	</div>
