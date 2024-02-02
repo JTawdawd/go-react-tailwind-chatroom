@@ -29,7 +29,7 @@ func getSqlString(queryName string) (string, error) {
 
 	sqlContent, err := os.ReadFile(filePath)
 	if err != nil {
-		return "", errors.New("Error reading ${queryName}")
+		return "", errors.New("Error reading " + queryName)
 	}
 
 	return string(sqlContent[:]), nil

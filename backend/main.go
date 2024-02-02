@@ -35,6 +35,7 @@ func serveReactApp(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	http.HandleFunc("/websocket/connect", handleWebsocket)
 	http.Handle("/", &myHandler{})
 	http.ListenAndServe(":8080", nil)
 }

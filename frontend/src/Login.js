@@ -31,8 +31,9 @@ const Login = ({ setLoggedIn }) => {
       },
       body: JSON.stringify({ username: username, password: password})
     });
-    const data = response.json();
-    if (data.error !== undefined) {
+    const data = await response.json();
+    if (data.status !== 'Success') {
+      setErrors([data.Error]);
       return;
     }
     setUsername(data.username);
@@ -74,6 +75,11 @@ const Login = ({ setLoggedIn }) => {
   // Template
   return (
     <div className="entry_wrapper">
+      <div>
+      {errors.map((error) => (
+          <p>{ error }</p>
+        ))}
+      </div>
 		<header>
 			<h3 id="login" onClick={() => {toggleLogin(true)}}> Login </h3>
 			<h3 id="register"onClick={() => {toggleLogin(false)}}> Register </h3>
@@ -99,10 +105,10 @@ const Login = ({ setLoggedIn }) => {
 				<input type = "text" id = "email" value={email} onChange={(e) => setEmail(e.target.value)}/>
 				
 				<label> Password </label>
-				<input type = "text" id = "password" value={password} onChange={(e) => setPassword(e.target.value)}/>
+				<input type="password" id = "password" value={password} onChange={(e) => setPassword(e.target.value)}/>
 				
 				<label> Confirm Password </label>
-				<input type="text" name="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}/>
+				<input type="password" name="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}/>
 				
 				<button onClick={createUser}>Register</button>
 			</form>

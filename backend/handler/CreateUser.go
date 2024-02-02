@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"log"
 )
 
 type registerRequest struct {
@@ -19,14 +18,20 @@ func CreateUser(data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	log.Printf("Received create request:\nUsername: %s\nPassword: %s\n", decodedData.Username, decodedData.Password)
+	rows, err := query("CheckUserExist", decodedData.Username)
+	if err != nil {
+		return nil, errors.New("Failed to check for current users")
+	}
+	if rows.Next() {
+		return nil, errors.New("User already exists")
+	}
 
 	err = insert("CreateUser", decodedData.Username, decodedData.Password)
 	if err != nil {
 		return []byte("Failed to create user"), err
 	}
 
-	rows, err := query("GetUser", decodedData.Username, decodedData.Password)
+	rows, err = query("GetUser", decodedData.Username, decodedData.Password)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +49,8 @@ func CreateUser(data []byte) ([]byte, error) {
 		return nil, errors.New("no user found")
 	}
 	return json.Marshal(map[string]interface{}{
-		"status":   "Created user",
+		"status":   "Success",
+		"message":  "Created User",
 		"id":       id,
 		"username": username,
 	})

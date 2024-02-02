@@ -16,4 +16,5 @@ func init() {
 	handlerDefinitions["/api/createUser"] = handler.CreateUser
 	handlerDefinitions["/api/getChatrooms"] = handler.GetChatrooms
 	handlerDefinitions["/api/getChatroom"] = handler.GetChatroom
+	handlerDefinitions["/api/createMessage"] = handler.CreateMessage
 }
