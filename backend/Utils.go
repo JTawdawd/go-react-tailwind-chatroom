@@ -5,7 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"sync"
+	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -15,8 +15,6 @@ var (
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 	}
-	connections = make([]*websocket.Conn, 0)
-	connMu      sync.Mutex
 )
 
 type Response struct {
@@ -48,10 +46,8 @@ func handlePost(w http.ResponseWriter, r *http.Request) {
 
 	var res Response
 	json.Unmarshal(response, &res)
-	if res.Message == "Created Message" {
-		for _, connection := range connections {
-			connection.WriteMessage(1, []byte("New message"))
-		}
+	if strings.HasPrefix(res.Message, "Created Message:") {
+		chatroomManager.SendMessageToChatroom(strings.Replace(res.Message, "Created Message:", "", -1), "New message")
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -79,35 +75,29 @@ func handleGet(w http.ResponseWriter, r *http.Request) {
 
 func handleWebsocket(w http.ResponseWriter, r *http.Request) {
 	log.Println("Recieved websock connection")
+	chatroomID := r.URL.Query().Get("chatroomID")
+	if chatroomID == "" {
+		log.Println("Missing chatroomID in query parameters")
+		http.Error(w, "Missing chatroomID", http.StatusBadRequest)
+		return
+	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	connMu.Lock()
-	connections = append(connections, conn)
-	connMu.Unlock()
 
-	defer func() {
-		connMu.Lock()
-		defer connMu.Unlock()
-
-		for i, c := range connections {
-			if c == conn {
-				connections = append(connections[:i], connections[i+1:]...)
-				break
-			}
-		}
-	}()
+	chatroomManager.AddConnectionToChatroom(string(chatroomID), conn)
+	defer chatroomManager.RemoveConnectionFromChatroom(string(chatroomID), conn)
 
 	for {
-		messageType, p, err := conn.ReadMessage()
+		messageType, _, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			break
 		}
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println(err)
+		if messageType == websocket.CloseMessage {
 			break
 		}
 	}

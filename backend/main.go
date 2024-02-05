@@ -3,7 +3,12 @@ package main
 import (
 	"net/http"
 	"strings"
+	"sync"
+
+	"github.com/gorilla/websocket"
 )
+
+var chatroomManager *ChatroomManager
 
 type myHandler struct{}
 
@@ -14,7 +19,6 @@ func (h *myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !strings.HasPrefix(r.URL.Path, "/api") {
-		//serveReactApp(w, r)
 		http.ServeFile(w, r, "../frontend/build/index.html")
 		return
 	}
@@ -35,6 +39,11 @@ func serveReactApp(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	chatroomManager = &ChatroomManager{
+		connections: make(map[string][]*websocket.Conn),
+		mutexes:     make(map[string]*sync.Mutex),
+	}
+
 	http.HandleFunc("/websocket/connect", handleWebsocket)
 	http.Handle("/", &myHandler{})
 	http.ListenAndServe(":8080", nil)

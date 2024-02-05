@@ -1,20 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, useParams, Link } from 'react-router-dom';
 
-let websocket = new WebSocket('ws://localhost:8080/websocket/connect');
-
-websocket.onopen = function(event) {
-  console.log('WebSocket connection opened:', event);
-};
-
-websocket.onclose = function(event) {
-  console.log('WebSocket connection closed:', event);
-};
-
-websocket.onerror = function(event) {
-  console.error('WebSocket error:', event);
-};
-
 const ChatRoom = (loggedIn) => {
 
     const [content, setContent] = useState('');
@@ -24,17 +10,6 @@ const ChatRoom = (loggedIn) => {
     const isOwnMessage = (userId) => {
       return userId === localStorage.getItem('userId');
     }
-
-    if (websocket.readyState !== WebSocket.OPEN) {
-      websocket = new WebSocket('ws://localhost:8080/websocket/connect');
-    }
-
-    websocket.onmessage = function(event) {
-      console.log('Received message:', event.data);
-      if (event.data === 'New message') {
-        fetchMessages();
-      }
-    };
 
     async function fetchMessages() {
       const response = await fetch(`/api/getChatroom`, {
@@ -46,7 +21,7 @@ const ChatRoom = (loggedIn) => {
       });
       const messagesData = await response.json();
       if (messagesData.status === 'Success') {
-        setMessages(messagesData.messages);
+        setMessages(messagesData.messages || []);
         setTimeout(scrollToBottom, 0);
       }
     }
@@ -57,9 +32,19 @@ const ChatRoom = (loggedIn) => {
     }
 
     useEffect(() => {
-      if (loggedIn) {
-          fetchMessages();
+      if (!loggedIn) {
+        return;
       }
+      fetchMessages();
+
+      const websocket = new WebSocket(`ws://localhost:8080/websocket/connect?chatroomID=${id}`);
+
+      websocket.onmessage = function(event) {
+        console.log('Received message:', event.data);
+        if (event.data === 'New message') {
+          fetchMessages();
+        }
+      };
 
       return () => {
         websocket.close();
