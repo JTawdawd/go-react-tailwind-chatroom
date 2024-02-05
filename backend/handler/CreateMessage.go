@@ -26,6 +26,6 @@ func CreateMessage(data []byte) ([]byte, error) {
 
 	return json.Marshal(map[string]interface{}{
 		"status":  "Success",
-		"message": "Created Message",
+		"message": "Created Message:" + decodedData.ChatroomId,
 	})
 }

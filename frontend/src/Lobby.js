@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import ChatroomPreview from './ChatroomPreview';
+import CreateChatroom from './CreateChatroom'
 import './App.css'
 
 const Lobby = ({ loggedIn }) => {
@@ -33,6 +34,7 @@ const Lobby = ({ loggedIn }) => {
   return (
     <div>
       <h2>Welcome {username}</h2>
+      <CreateChatroom loggedIn={loggedIn} />
       <div className="chatroomContainer">
         {chatrooms.map((chatroom) => (
           <ChatroomPreview key={chatroom.id} id={chatroom.id} title={chatroom.title} />
