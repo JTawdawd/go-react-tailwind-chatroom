@@ -5,3 +5,5 @@ Uses a local postgres DB on port 5432 with username and dbname "postgres", passw
 
 Build front end using ./frontend `npm run build`
 Run backend using ./backend `go run .`
+
+Hosts at port 8080
