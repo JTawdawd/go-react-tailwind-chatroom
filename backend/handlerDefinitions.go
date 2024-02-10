@@ -8,7 +8,10 @@ type handlerDefinition func([]byte) ([]byte, error)
 
 var handlerDefinitions map[string]handlerDefinition
 
-func init() {
+func defineHandlers() {
+
+	handler.SetChatroomManager(chatroomManager)
+
 	handlerDefinitions = make(map[string]handlerDefinition)
 
 	//handlerDefinitions["/"] = fs

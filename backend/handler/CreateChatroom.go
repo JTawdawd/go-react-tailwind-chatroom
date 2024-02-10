@@ -5,12 +5,12 @@ import (
 	"errors"
 )
 
-type chatroom struct {
+type chatroomRequest2 struct {
 	Title string `json:"title"`
 }
 
 func CreateChatroom(data []byte) ([]byte, error) {
-	var decodedData chatroom
+	var decodedData chatroomRequest2
 	err := json.Unmarshal(data, &decodedData)
 	if err != nil {
 		return nil, err
@@ -34,13 +34,9 @@ func CreateChatroom(data []byte) ([]byte, error) {
 	)
 
 	rows, err = query("ChatroomByTitle", decodedData.Title)
-	if err != nil {
+	if err != nil || !rows.Next() {
 		return nil, errors.New("Failed to get created chatroom")
 	}
-	if !rows.Next() {
-		return nil, errors.New("Failed to get created chatroom")
-	}
-
 	rows.Scan(&id)
 
 	return json.Marshal(map[string]interface{}{

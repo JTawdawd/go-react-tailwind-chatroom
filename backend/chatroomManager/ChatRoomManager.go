@@ -1,4 +1,4 @@
-package main
+package chatroom
 
 import (
 	"sync"
@@ -9,6 +9,13 @@ import (
 type ChatroomManager struct {
 	connections map[string][]*websocket.Conn
 	mutexes     map[string]*sync.Mutex
+}
+
+func CreateChatroom() *ChatroomManager {
+	return &ChatroomManager{
+		connections: make(map[string][]*websocket.Conn),
+		mutexes:     make(map[string]*sync.Mutex),
+	}
 }
 
 func (cm *ChatroomManager) AddConnectionToChatroom(chatroomID string, connection *websocket.Conn) {
@@ -22,7 +29,7 @@ func (cm *ChatroomManager) AddConnectionToChatroom(chatroomID string, connection
 	cm.connections[chatroomID] = append(cm.connections[chatroomID], connection)
 }
 
-func (cm *ChatroomManager) SendMessageToChatroom(chatroomID string, message string) {
+func (cm *ChatroomManager) SendMessageToChatroom(chatroomID string, message []byte) {
 	cm.getMutex(chatroomID).Lock()
 	defer cm.getMutex(chatroomID).Unlock()
 

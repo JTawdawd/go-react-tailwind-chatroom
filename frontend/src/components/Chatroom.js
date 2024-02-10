@@ -32,6 +32,14 @@ const ChatRoom = (loggedIn) => {
       container.scrollTop = container.scrollHeight;
     }
 
+    function newMessage(newMessage) {
+      if (!newMessage) {
+        return;
+      }
+      messages.push({...newMessage, id: newMessage.createdby})
+      setMessages(messages)
+    };
+
     useEffect(() => {
       if (!loggedIn) {
         return;
@@ -40,11 +48,8 @@ const ChatRoom = (loggedIn) => {
 
       const websocket = new WebSocket(`ws://localhost:8080/websocket/connect?chatroomID=${id}`);
 
-      websocket.onmessage = function(event) {
-        console.log('Received message:', event.data);
-        if (event.data === 'New message') {
-          fetchMessages();
-        }
+      websocket.onmessage = (event) => {
+       newMessage(JSON.parse(event.data))
       };
 
       return () => {

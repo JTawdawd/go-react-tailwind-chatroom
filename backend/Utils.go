@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -16,11 +15,6 @@ var (
 		WriteBufferSize: 1024,
 	}
 )
-
-type Response struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
-}
 
 func handlePost(w http.ResponseWriter, r *http.Request) {
 	if handlerDefinitions[r.URL.Path] == nil {
@@ -44,11 +38,7 @@ func handlePost(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	var res Response
-	json.Unmarshal(response, &res)
-	if strings.HasPrefix(res.Message, "Created Message:") {
-		chatroomManager.SendMessageToChatroom(strings.Replace(res.Message, "Created Message:", "", -1), "New message")
-	}
+	//response, _ = json.Marshal(response)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -60,13 +50,14 @@ func handleGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "handler not defined", http.StatusBadRequest)
 		return
 	}
-	response, err := handlerDefinitions[r.URL.Path]([]byte{})
+	response, err := handlerDefinitions[r.URL.Path](nil)
 	if err != nil {
 		response, _ = json.Marshal(map[string]interface{}{
 			"status": "Error",
 			"Error":  "handler failed: " + err.Error(),
 		})
 	}
+	//response, _ = json.Marshal(response)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

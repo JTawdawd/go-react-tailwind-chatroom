@@ -1,14 +1,12 @@
 package main
 
 import (
+	"chatroom"
 	"net/http"
 	"strings"
-	"sync"
-
-	"github.com/gorilla/websocket"
 )
 
-var chatroomManager *ChatroomManager
+var chatroomManager *chatroom.ChatroomManager
 
 type myHandler struct{}
 
@@ -39,10 +37,9 @@ func serveReactApp(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	chatroomManager = &ChatroomManager{
-		connections: make(map[string][]*websocket.Conn),
-		mutexes:     make(map[string]*sync.Mutex),
-	}
+	chatroomManager = chatroom.CreateChatroom()
+
+	defineHandlers()
 
 	http.HandleFunc("/websocket/connect", handleWebsocket)
 	http.Handle("/", &myHandler{})
